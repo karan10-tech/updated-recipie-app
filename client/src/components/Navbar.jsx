@@ -20,7 +20,8 @@ const Navbar = () => {
   const logout = () => {
     setCookies("access_token", "");
     window.localStorage.clear();
-    navigate("/auth/login");
+    navigate("/");
+    window.location.reload();
   };
 
   const { currentUser } = useSelector((state) => state.user);
