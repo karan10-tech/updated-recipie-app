@@ -5,7 +5,8 @@ import cookieParser from "cookie-parser"
 const app = express()
 
 app.use(cors({
-  origin: process.env.CLIENT_URL?.split(',') || ["http://localhost:5173"],
+  // origin: process.env.CLIENT_URL?.split(',') || ["http://localhost:5173"],
+  origin: "https://updated-recipie-app-1.onrender.com",
   credentials: true,
 })
 );
