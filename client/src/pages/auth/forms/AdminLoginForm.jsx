@@ -1,46 +1,55 @@
 import React, { useState } from "react";
-import { Form, Input, Button, message, Spin } from "antd";
-import axios from "axios";
-import { useCookies } from "react-cookie";
+import { Form, Input, Button, message } from "antd";
 import { useNavigate } from "react-router-dom";
+import { useCookies } from "react-cookie";
 import { Link } from "react-router-dom";
-import logo from "../../../../public/assets/logo.svg";
-import "../../../styles/register.css";
-
+import axios from "axios";
+import { useDispatch, useSelector } from "react-redux";
 import {
   logInStart,
   logInSuccess,
   logInFailure,
-} from "../../../redux/user/userSlice";
-import { useDispatch, useSelector } from "react-redux";
-import Spinner from "../../../components/Spinner.jsx";
+} from "../../../redux/user/userSlice.js";
 import API_BASE_URL from "../../../constant.js";
+import Spinner from "../../../components/Spinner.jsx";
+import logo from "../../../../public/assets/logo.svg";
+import "../../../styles/register.css";
 
-const LoginForm = () => {
+export default function AdminLoginForm() {
   const [form] = Form.useForm();
   const navigate = useNavigate();
   const dispatch = useDispatch();
-
   const { loading, error } = useSelector((state) => state.user);
-
   const [_, setCookies] = useCookies(["access_token"]);
 
   const onFinish = async (values) => {
     try {
       dispatch(logInStart());
-      const response = await axios.post(`${API_BASE_URL}/api/v1/users/login`, {
-        username: values.username,
-        password: values.password,
-      });
+      const response = await axios.post(
+        `${API_BASE_URL}/api/v1/users/admin-login`,
+        {
+          username: values.username,
+          password: values.password,
+        }
+      );
+
+      const { user, access_token } = response.data.data;
+
+      // Check if user is actually an admin
+      if (user.role !== "admin") {
+        message.error("Access denied. Admin credentials required.");
+        dispatch(logInFailure({ message: "Not an admin" }));
+        return;
+      }
 
       dispatch(logInSuccess(response));
-
-      message.success("Login successful");
-
-      setCookies("access_token", response.data.data.access_token);
-      navigate("/");
+      message.success("Admin login successful!");
+      setCookies("access_token", access_token);
+      window.localStorage.setItem("userID", user._id);
+      window.localStorage.setItem("access_token", access_token);
+      navigate("/admin/dashboard");
     } catch (err) {
-      message.error("Login failed. Please check your credentials.");
+      message.error(err.response?.data?.message || "Invalid admin credentials");
       console.error(err);
       dispatch(logInFailure(err));
     }
@@ -51,7 +60,7 @@ const LoginForm = () => {
       <Form form={form} onFinish={onFinish}>
         <div className="registerFormLogo">
           <img src={logo} alt="logo" />
-          <h2>Login to your account</h2>
+          <h2>Admin Login</h2>
         </div>
         <Form.Item
           name="username"
@@ -72,15 +81,12 @@ const LoginForm = () => {
             </Button>
           ) : (
             <Button type="primary" htmlType="submit">
-              Login
+              Login as Admin
             </Button>
           )}
-          <Link to="/auth/register">Don't have an account? Register</Link>
-          <Link to="/admin/login">Are you and Admin? Login</Link>
+          <Link to="/auth/login">Not an admin? User Login</Link>
         </Form.Item>
       </Form>
     </div>
   );
-};
-
-export default LoginForm;
+}

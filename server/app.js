@@ -1,14 +1,15 @@
-import express from "express"
-import cors from "cors"
-import cookieParser from "cookie-parser"
+import express from "express";
+import cors from "cors";
+import cookieParser from "cookie-parser";
 
-const app = express()
+const app = express();
 
-app.use(cors({
-  // origin: process.env.CLIENT_URL?.split(',') || ["http://localhost:5173"],
-  origin: "https://updated-recipie-app-1.onrender.com",
-  credentials: true,
-})
+app.use(
+  cors({
+    // origin: process.env.CLIENT_URL?.split(",") || ["http://localhost:5173"],
+    origin: "https://updated-recipie-app-1.onrender.com",
+    credentials: true,
+  })
 );
 
 app.use(express.json({ limit: "900kb" }));
@@ -19,11 +20,12 @@ app.use(cookieParser());
 // routes
 
 import userRoute from "./routes/user.route.js";
-import recipeRoute from "./routes/recipe.route.js"
-
+import recipeRoute from "./routes/recipe.route.js";
+import adminRoutes from "./routes/admin.route.js";
 // routes declaration
 
 app.use("/api/v1/users/", userRoute);
 app.use("/api/v1/recipe/", recipeRoute);
+app.use("/api/v1/admin/", adminRoutes);
 
-export { app }
+export { app };
